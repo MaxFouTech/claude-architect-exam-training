@@ -10,9 +10,13 @@ export const description =
   "IMPORTANT: by default it counts ONLY status=='completed' orders, i.e. NET revenue. Pass status='all' for GROSS revenue " +
   "or status='refunded' to analyse refunds' value. " +
   "group_by accepts region, category, product, customer_id, month (YYYY-MM), quarter (Q1/Q2), status. " +
-  "Set then_by to get a nested breakdown (e.g. group_by='region', then_by='category') and use top_per_group=1 to get the " +
-  "leading sub-group of each group. Set include_change=true with group_by='month' or 'quarter' to also get the " +
-  "period-over-period % change. The final TOTAL line gives the scope total. Never sum rows by hand - call this instead.";
+  "ONE CALL IS USUALLY ENOUGH - do not loop over regions/months with repeated filtered calls. " +
+  "To get the leading sub-group of EVERY group at once (e.g. the top product in each region) use " +
+  "then_by + top_per_group=1: breakdown_orders(group_by='region', then_by='product', top_per_group=1) returns all four " +
+  "regions and their #1 product in a single response. Set include_change=true with group_by='month' or 'quarter' " +
+  "(together with sort_by='key') to also get the period-over-period % change, and include_top_share=true with top=N " +
+  "to get the combined share of the top N groups. The final TOTAL line gives the scope total. " +
+  "Never sum rows by hand - call this instead.";
 export const schema = {
   group_by: z
     .enum(["region", "category", "product", "customer_id", "month", "quarter", "status"])
