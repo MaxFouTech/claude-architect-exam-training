@@ -68,9 +68,15 @@ export function createOrchestratorServer(root: string) {
     "Load tools/*.mjs fresh and call one tool with the given arguments. Use it to check a tool compiles and returns what you intend before dispatching workers.",
     {
       name: z.string().describe("Tool name as exported by the module"),
-      args: z.record(z.string(), z.unknown()).default({}).describe("Arguments to pass"),
+      args_json: z.string().default("{}").describe("Arguments to pass, as a JSON object string"),
     },
     async (args) => {
+      let parsed: Record<string, unknown>;
+      try {
+        parsed = JSON.parse(args.args_json);
+      } catch (err) {
+        return { content: [{ type: "text", text: `args_json is not valid JSON: ${err instanceof Error ? err.message : String(err)}` }], isError: true };
+      }
       const { modules, errors } = await loadToolModules(toolsDir);
       const mod = modules.find((m) => m.name === args.name);
       if (!mod) {
@@ -80,7 +86,7 @@ export function createOrchestratorServer(root: string) {
         };
       }
       try {
-        const out = await mod.handler(args.args as Record<string, unknown>);
+        const out = await mod.handler(parsed);
         return { content: [{ type: "text", text: JSON.stringify(out, null, 2) }] };
       } catch (err) {
         return { content: [{ type: "text", text: `Handler threw: ${err instanceof Error ? err.stack ?? err.message : String(err)}` }], isError: true };
