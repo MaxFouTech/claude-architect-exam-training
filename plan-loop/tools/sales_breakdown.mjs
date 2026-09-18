@@ -18,8 +18,8 @@ export const schema = {
   then_by: z.enum(DIM).optional().describe("Optional second dimension; produces one row per '<group_by>/<then_by>' cell."),
   status: z
     .enum(["completed", "refunded", "cancelled", "all"])
-    .default("completed")
-    .describe("Which orders count toward revenue/orders/units. 'completed' = NET revenue. 'all' = GROSS revenue."),
+    .optional()
+    .describe("Which orders count toward revenue/orders/units. Omit for 'completed' = NET revenue. 'all' = GROSS revenue."),
   sort: z
     .enum([
       "revenue_desc",
@@ -31,8 +31,8 @@ export const schema = {
       "refund_rate_desc",
       "key_asc",
     ])
-    .default("revenue_desc")
-    .describe("Row ordering. Use key_asc for alphabetical/chronological output."),
+    .optional()
+    .describe("Row ordering. Omit for revenue_desc. Use key_asc for alphabetical/chronological output."),
   top_n: z
     .number()
     .int()
@@ -41,12 +41,12 @@ export const schema = {
     .describe("Return only the first N rows after sorting. Shares and extras are still computed over ALL groups."),
   include_refund_metrics: z
     .boolean()
-    .default(false)
-    .describe("Add refunded_revenue, refunded_orders, total_orders_all_statuses, refund_rate_by_orders_pct and refunded_share_of_gross_pct per row (always computed over ALL statuses, independent of the status filter)."),
+    .optional()
+    .describe("Set true to add refunded_revenue, refunded_orders, total_orders_all_statuses, refund_rate_by_orders_pct and refunded_share_of_gross_pct per row (always computed over ALL statuses, independent of the status filter). Omit otherwise."),
   include_mom: z
     .boolean()
-    .default(false)
-    .describe("Add mom_pct (month-over-month % change in revenue). Use with group_by='month' and sort='key_asc'."),
+    .optional()
+    .describe("Set true to add mom_pct (month-over-month % change in revenue). Use with group_by='month' and sort='key_asc'. Omit otherwise."),
 };
 
 const rev = (o) => o.quantity * o.unit_price;
