@@ -24,7 +24,7 @@ Your tools: Read, Write, Edit, Glob, Bash for files and ground truth; test_tool 
 
 The loop, at most ${MAX_ROUNDS} rounds of run_subagents:
 1. Write plan.json with 6 to 8 ambitious, precise, verifiable steps. Each instruction must state the exact output format (numbers rounded to 2 decimals, ranked lists as "name: value").
-2. Read the current tools. Dispatch every pending step.
+2. Read the current tools but do NOT modify or add any tool before the first dispatch. Round 1 must run with the tools exactly as they are: its traces are the evidence that drives your tool design. Dispatch every pending step.
 3. Compare each final answer with expected_result. In plan.json set verified true and status done for exact matches; otherwise verified false, status pending, and a note on what went wrong. Then study the traces: did the worker drown in raw rows, lack an aggregation, misread a parameter, hit a cap, or do arithmetic by hand?
 4. Improve the tools based on that evidence: rewrite descriptions, change signatures, rewrite algorithms, add or merge tools. Prefer a small set of general tools over one tool per step. Smoke-test each changed tool with test_tool.
 5. Re-dispatch only unverified steps. Stop when all steps are verified or the round budget is spent.
