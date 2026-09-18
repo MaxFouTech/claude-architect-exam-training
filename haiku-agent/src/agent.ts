@@ -43,7 +43,7 @@ const searchQuestions = tool(
       .optional()
       .describe("Topic slug, e.g. prompt-caching, tool-use, agents, thinking, batches, structured-outputs, context-management"),
     difficulty: z.enum(["easy", "medium", "hard"]).optional().describe("Difficulty filter"),
-    limit: z.number().int().min(1).max(10).default(3).describe("Max questions to return"),
+    limit: z.number().int().min(1).max(10).optional().describe("Max questions to return, default 3"),
   },
   async (args) => {
     const hits = questions.filter(
@@ -59,7 +59,7 @@ const searchQuestions = tool(
       };
     }
     return {
-      content: [{ type: "text", text: JSON.stringify(hits.slice(0, args.limit), null, 2) }],
+      content: [{ type: "text", text: JSON.stringify(hits.slice(0, args.limit ?? 3), null, 2) }],
     };
   },
   { annotations: { readOnlyHint: true }, alwaysLoad: true },

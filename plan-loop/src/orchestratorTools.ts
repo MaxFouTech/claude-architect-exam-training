@@ -27,7 +27,7 @@ export function createOrchestratorServer(root: string) {
         )
         .min(1)
         .max(10),
-      max_turns: z.number().int().min(2).max(30).default(12),
+      max_turns: z.number().int().min(2).max(30).optional().describe("Worker turn cap; defaults to 12"),
     },
     async (args) => {
       round += 1;
@@ -45,7 +45,7 @@ export function createOrchestratorServer(root: string) {
       const started = Date.now();
       const results = await Promise.all(
         args.assignments.map((a) =>
-          runWorker({ planPath, toolsDir, stepIds: a.step_ids, extraPrompt: a.prompt, maxTurns: args.max_turns }),
+          runWorker({ planPath, toolsDir, stepIds: a.step_ids, extraPrompt: a.prompt, maxTurns: args.max_turns ?? 12 }),
         ),
       );
       const { modules } = await loadToolModules(toolsDir);
@@ -68,12 +68,12 @@ export function createOrchestratorServer(root: string) {
     "Load tools/*.mjs fresh and call one tool with the given arguments. Use it to check a tool compiles and returns what you intend before dispatching workers.",
     {
       name: z.string().describe("Tool name as exported by the module"),
-      args_json: z.string().default("{}").describe("Arguments to pass, as a JSON object string"),
+      args_json: z.string().optional().describe("Arguments to pass, as a JSON object string; omit for {}"),
     },
     async (args) => {
       let parsed: Record<string, unknown>;
       try {
-        parsed = JSON.parse(args.args_json);
+        parsed = JSON.parse(args.args_json ?? "{}");
       } catch (err) {
         return { content: [{ type: "text", text: `args_json is not valid JSON: ${err instanceof Error ? err.message : String(err)}` }], isError: true };
       }

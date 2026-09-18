@@ -72,7 +72,9 @@ export async function handler(args) {
 ```
 
 Files starting with `_` are ignored. Handler exceptions reach the worker as
-error results, not crashes.
+error results, not crashes. Use `.optional()` for optional parameters and apply
+defaults inside the handler: a zod `.default()` is rejected as a missing required
+field when the worker omits it.
 
 ## Running one worker by hand
 
