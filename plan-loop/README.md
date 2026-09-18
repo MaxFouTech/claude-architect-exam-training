@@ -40,6 +40,19 @@ The seed tool `tools-seed/query_orders.mjs` returns raw rows capped at 50. A
 Haiku worker cannot answer aggregate questions with it, which is the point: the
 main agent has to observe that in the traces and evolve the tools.
 
+## Results from a real run (examples/run-3-clean)
+
+| Round | Tools available | Verified | What happened |
+|---|---|---|---|
+| 1 | seed `query_orders` (raw rows, cap 50) | 0 / 7 | 5 workers blocked on the cap, 2 aggregated a truncated sample by hand and reported confident wrong numbers |
+| 2 | `summarize_orders`, `breakdown_orders`, `refund_report`, rewritten `query_orders` | 7 / 7 | main agent built aggregators from the round-1 traces, smoke-tested them with `test_tool`, and every worker passed |
+| 3 | same, `breakdown_orders` description rewritten | 1 / 1 | one worker had burned its whole turn budget looping; the description fix cut it to 4 data calls and 8 turns |
+
+The main agent's own account is in `report.md`. Full per-worker traces are in
+`examples/run-3-clean/round-0N.json`. `examples/run-1-bash-workaround/` is an
+earlier run that reached 7/7 the same way but dispatched through a script
+because of a since-fixed tool schema bug.
+
 ## Files
 
 | Path | What |
