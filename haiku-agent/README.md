@@ -12,11 +12,12 @@ What the agent is made of, and nothing else:
 | Model | `haiku` (the CLI resolves the alias to the current Haiku) |
 | System prompt | One short string in `src/agent.ts` |
 | User prompt | CLI argument, or a default in `src/agent.ts` |
-| Custom tool | `search_questions`, an in-process MCP tool in `src/agent.ts` |
+| Custom tools | `search_questions`, `write_memory`, `read_memory`, in-process MCP tools in `src/agent.ts` |
 | Mock data | `data/questions.json`, a 12-question exam bank |
+| Memory | `data/memory.json`, written by the agent, gitignored |
 
 All built-in Claude Code tools are removed (`tools: []`), no `CLAUDE.md` or
-settings files are loaded (`settingSources: []`), and the single tool is
+settings files are loaded (`settingSources: []`), and the three tools are
 pre-approved (`allowedTools`) so nothing prompts for permission.
 
 ## Goal of the agent
@@ -48,7 +49,18 @@ Example output:
 The cost line is the SDK's estimate of what the call would cost at API rates.
 Under a subscription it is informational only.
 
-## The tool
+## The tools
+
+`write_memory(key, value)` saves a note to `data/memory.json`.
+`read_memory(key?)` returns one note or all of them. The file survives between
+runs, so a note written in one `npm start` is available in the next. The system
+prompt tells the agent to read memory first and to write it when the student
+shares something worth keeping.
+
+```
+npm start -- "My name is Max and I keep failing prompt caching. Remember that."
+npm start -- "Who am I and what should I practice?"   # new process, recalls Max
+```
 
 `search_questions(topic?, difficulty?, limit=3)` filters `data/questions.json`
 by topic slug and difficulty and returns the matching questions as JSON,

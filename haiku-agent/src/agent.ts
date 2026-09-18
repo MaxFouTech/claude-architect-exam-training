@@ -4,9 +4,10 @@
  * - Model: Haiku (current generation alias resolved by the CLI)
  * - Auth: the Claude Code login on this machine (subscription). No API key.
  * - Prompts: one concise system prompt, one concise user prompt.
- * - Tools: every built-in tool removed; exactly one custom in-process tool.
+ * - Tools: every built-in tool removed; three custom in-process tools
+ *   (search_questions, write_memory, read_memory). Memory lives in data/memory.json.
  */
-import { readFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createSdkMcpServer, query, tool } from "@anthropic-ai/claude-agent-sdk";
@@ -64,10 +65,64 @@ const searchQuestions = tool(
   { annotations: { readOnlyHint: true }, alwaysLoad: true },
 );
 
+// ---------- Memory tools (persisted to disk across runs) ----------
+
+const MEMORY_FILE = path.join(here, "..", "data", "memory.json");
+
+async function loadMemory(): Promise<Record<string, string>> {
+  try {
+    return JSON.parse(await readFile(MEMORY_FILE, "utf8"));
+  } catch {
+    return {};
+  }
+}
+
+async function saveMemory(memory: Record<string, string>): Promise<void> {
+  await mkdir(path.dirname(MEMORY_FILE), { recursive: true });
+  await writeFile(MEMORY_FILE, JSON.stringify(memory, null, 2) + "\n", "utf8");
+}
+
+const writeMemory = tool(
+  "write_memory",
+  "Save a short note under a key so it can be recalled in later sessions. Overwrites any existing value for that key.",
+  {
+    key: z.string().min(1).describe("Short snake_case key, e.g. student_name, weak_topics"),
+    value: z.string().min(1).describe("The note to remember"),
+  },
+  async (args) => {
+    const memory = await loadMemory();
+    memory[args.key] = args.value;
+    await saveMemory(memory);
+    return { content: [{ type: "text", text: `Saved ${args.key}. Memory now has ${Object.keys(memory).length} entries.` }] };
+  },
+  { annotations: { idempotentHint: true }, alwaysLoad: true },
+);
+
+const readMemory = tool(
+  "read_memory",
+  "Read saved notes. Pass a key for one note, or omit it to get every note.",
+  {
+    key: z.string().optional().describe("Key to read; omit for all notes"),
+  },
+  async (args) => {
+    const memory = await loadMemory();
+    if (args.key) {
+      const value = memory[args.key];
+      return value === undefined
+        ? { content: [{ type: "text", text: `No memory for key "${args.key}". Known keys: ${Object.keys(memory).join(", ") || "(none)"}` }], isError: true }
+        : { content: [{ type: "text", text: value }] };
+    }
+    return {
+      content: [{ type: "text", text: Object.keys(memory).length ? JSON.stringify(memory, null, 2) : "Memory is empty." }],
+    };
+  },
+  { annotations: { readOnlyHint: true }, alwaysLoad: true },
+);
+
 const examServer = createSdkMcpServer({
   name: "exam",
   version: "1.0.0",
-  tools: [searchQuestions],
+  tools: [searchQuestions, writeMemory, readMemory],
 });
 
 // ---------- Prompts ----------
@@ -75,7 +130,8 @@ const examServer = createSdkMcpServer({
 const SYSTEM_PROMPT =
   "You are an exam coach for the Claude Architect certification. " +
   "Use search_questions to fetch real questions from the bank, never invent them. " +
-  "Reply in under 120 words: quiz the student, then give the answer and a one-line explanation.";
+  "Start by calling read_memory to recall the student. Use write_memory when the student tells you something worth keeping, " +
+  "such as their name or weak topics. Reply in under 120 words: quiz the student, then give the answer and a one-line explanation.";
 
 const USER_PROMPT = process.argv.slice(2).join(" ") || "Give me one medium question about prompt caching.";
 
@@ -91,7 +147,7 @@ for await (const message of query({
     systemPrompt: SYSTEM_PROMPT,
     tools: [], // remove every built-in tool
     mcpServers: { exam: examServer },
-    allowedTools: ["mcp__exam__search_questions"], // auto-approve our tool
+    allowedTools: ["mcp__exam__*"], // auto-approve our three tools
     settingSources: [], // no CLAUDE.md, no user/project settings
     maxTurns: 5,
     env,
