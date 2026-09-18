@@ -97,7 +97,16 @@ for await (const message of query({
     env,
   },
 })) {
-  if (message.type === "assistant") {
+  if (message.type === "user" && Array.isArray(message.message.content)) {
+    for (const block of message.message.content) {
+      if (block.type === "tool_result") {
+        const text = Array.isArray(block.content)
+          ? block.content.map((c) => (c.type === "text" ? c.text : "")).join("")
+          : String(block.content ?? "");
+        console.log(`[tool result]${block.is_error ? " (error)" : ""}\n${text}\n`);
+      }
+    }
+  } else if (message.type === "assistant") {
     for (const block of message.message.content) {
       if (block.type === "tool_use") {
         console.log(`[tool call] ${block.name} ${JSON.stringify(block.input)}`);
