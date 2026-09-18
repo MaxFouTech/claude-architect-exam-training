@@ -1,0 +1,170 @@
+[
+  {
+    "id": "q001",
+    "topic": "prompt-caching",
+    "difficulty": "easy",
+    "question": "Prompt caching in the Claude API matches on which part of the request?",
+    "choices": {
+      "A": "Any content block anywhere in the request, in any order",
+      "B": "An exact prefix: tools, then system, then messages, up to a cache breakpoint",
+      "C": "Only the system prompt",
+      "D": "Only the last user message"
+    },
+    "answer": "B",
+    "explanation": "Caching is a prefix match. Any byte change earlier in the prefix invalidates everything after it, so stable content goes first and volatile content goes after the last breakpoint."
+  },
+  {
+    "id": "q002",
+    "topic": "prompt-caching",
+    "difficulty": "medium",
+    "question": "A team reports cache_read_input_tokens is always zero across repeated identical requests. What is the most likely cause?",
+    "choices": {
+      "A": "Prompt caching is disabled for their organization",
+      "B": "A silent invalidator such as a timestamp or UUID inside the cached prefix",
+      "C": "They are using streaming, which disables caching",
+      "D": "The model does not support caching"
+    },
+    "answer": "B",
+    "explanation": "Volatile values like Date.now(), unsorted JSON keys, or a varying tool set change the prefix bytes on every call and defeat the cache."
+  },
+  {
+    "id": "q003",
+    "topic": "tool-use",
+    "difficulty": "easy",
+    "question": "When Claude returns several tool_use blocks in one assistant message, how should the results be sent back?",
+    "choices": {
+      "A": "One user message per tool_result, in the order they were called",
+      "B": "All tool_result blocks together in a single user message",
+      "C": "Only the first tool_result; the others are ignored",
+      "D": "As a system message"
+    },
+    "answer": "B",
+    "explanation": "Returning all tool_result blocks in one user message keeps parallel tool use working. Splitting them across messages trains the model to stop calling tools in parallel."
+  },
+  {
+    "id": "q004",
+    "topic": "tool-use",
+    "difficulty": "medium",
+    "question": "A custom tool fails during execution. What is the correct way to report this back to Claude?",
+    "choices": {
+      "A": "Drop the tool_result block and continue",
+      "B": "Send a tool_result block with is_error set to true and a descriptive message",
+      "C": "Send the error as a plain text user message",
+      "D": "Abort the conversation"
+    },
+    "answer": "B",
+    "explanation": "A tool_result with is_error: true keeps the conversation valid and lets Claude retry, choose another tool, or explain the failure."
+  },
+  {
+    "id": "q005",
+    "topic": "agents",
+    "difficulty": "hard",
+    "question": "Which option supplies both the agent harness and managed deployment, so you neither write the loop nor host the compute?",
+    "choices": {
+      "A": "The Claude API manual tool-use loop",
+      "B": "The SDK Tool Runner",
+      "C": "Managed Agents",
+      "D": "The Claude Agent SDK"
+    },
+    "answer": "C",
+    "explanation": "The manual loop, the Tool Runner, and the Claude Agent SDK are harness-only and you host them. Managed Agents runs the loop and a per-session sandbox on Anthropic infrastructure."
+  },
+  {
+    "id": "q006",
+    "topic": "agents",
+    "difficulty": "medium",
+    "question": "In the Claude Agent SDK, what does passing tools: [] in the query options do?",
+    "choices": {
+      "A": "Disables MCP servers",
+      "B": "Removes every built-in tool so Claude can only use your MCP tools",
+      "C": "Disables tool calling entirely",
+      "D": "Has no effect"
+    },
+    "answer": "B",
+    "explanation": "tools controls the availability of built-in tools. An empty array removes all of them, while custom MCP tools passed via mcpServers remain available."
+  },
+  {
+    "id": "q007",
+    "topic": "thinking",
+    "difficulty": "medium",
+    "question": "Which thinking configuration is correct for Claude Opus 4.7 and later?",
+    "choices": {
+      "A": "thinking: { type: 'enabled', budget_tokens: 8000 }",
+      "B": "thinking: { type: 'adaptive' } with output_config.effort to control depth",
+      "C": "thinking: true",
+      "D": "Thinking is not supported on these models"
+    },
+    "answer": "B",
+    "explanation": "budget_tokens is removed on Opus 4.7 and later and returns a 400. Adaptive thinking plus an effort level is the current pattern."
+  },
+  {
+    "id": "q008",
+    "topic": "thinking",
+    "difficulty": "easy",
+    "question": "Which current model still requires budget_tokens to enable extended thinking?",
+    "choices": {
+      "A": "Claude Opus 5",
+      "B": "Claude Sonnet 5",
+      "C": "Claude Haiku 4.5",
+      "D": "Claude Fable 5.1"
+    },
+    "answer": "C",
+    "explanation": "Haiku 4.5 predates adaptive thinking and still uses thinking: { type: 'enabled', budget_tokens: N } with N below max_tokens and at least 1024."
+  },
+  {
+    "id": "q009",
+    "topic": "batches",
+    "difficulty": "easy",
+    "question": "Results from the Message Batches API arrive in what order?",
+    "choices": {
+      "A": "The same order as the submitted requests",
+      "B": "Sorted by custom_id",
+      "C": "Any order; match results by custom_id",
+      "D": "Sorted by completion time, oldest first"
+    },
+    "answer": "C",
+    "explanation": "Batch results can arrive in any order. Always key on custom_id, never on position."
+  },
+  {
+    "id": "q010",
+    "topic": "structured-outputs",
+    "difficulty": "medium",
+    "question": "What is the current, non-deprecated way to constrain a Messages API response to a JSON schema?",
+    "choices": {
+      "A": "output_format at the top level of the request",
+      "B": "output_config.format",
+      "C": "An assistant prefill containing an opening brace",
+      "D": "A stop sequence"
+    },
+    "answer": "B",
+    "explanation": "output_format is deprecated in favor of output_config: { format: {...} }. Assistant prefill is rejected on 4.6+ models."
+  },
+  {
+    "id": "q011",
+    "topic": "context-management",
+    "difficulty": "hard",
+    "question": "What is the difference between context editing and compaction?",
+    "choices": {
+      "A": "They are the same feature under two names",
+      "B": "Context editing clears old tool results or thinking blocks; compaction summarizes earlier context",
+      "C": "Compaction deletes messages; context editing summarizes them",
+      "D": "Context editing only works with Managed Agents"
+    },
+    "answer": "B",
+    "explanation": "Context editing removes content (clear_tool_uses, clear_thinking). Compaction replaces earlier history with a server-generated summary block that must be passed back."
+  },
+  {
+    "id": "q012",
+    "topic": "batches",
+    "difficulty": "medium",
+    "question": "What is the main cost benefit of the Message Batches API?",
+    "choices": {
+      "A": "Free input tokens",
+      "B": "Roughly half price in exchange for asynchronous processing",
+      "C": "No rate limits",
+      "D": "Automatic prompt caching"
+    },
+    "answer": "B",
+    "explanation": "Batches run asynchronously at about 50% of the standard price, which suits non-latency-sensitive workloads."
+  }
+]
