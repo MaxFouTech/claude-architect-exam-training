@@ -1,0 +1,43 @@
+{
+  "model": "opus",
+  "fixed_plan": true,
+  "duration_ms": 589970,
+  "main_turns": 31,
+  "rounds": [
+    {
+      "round": 1,
+      "dispatched": 7,
+      "passed": 0,
+      "worker_cost_usd": 1.3169,
+      "duration_ms": 345972,
+      "tools": [
+        "query_orders"
+      ]
+    },
+    {
+      "round": 2,
+      "dispatched": 7,
+      "passed": 7,
+      "worker_cost_usd": 0.2095,
+      "duration_ms": 41431,
+      "tools": [
+        "breakdown",
+        "query_orders",
+        "refund_report",
+        "sales_summary"
+      ]
+    }
+  ],
+  "rounds_used": 2,
+  "converged": true,
+  "main_cost_usd": 1.1413,
+  "worker_cost_usd": 1.5264,
+  "total_cost_usd": 2.6677,
+  "final_tools": [
+    "breakdown",
+    "query_orders",
+    "refund_report",
+    "sales_summary"
+  ],
+  "final_verified": "7/7"
+}

@@ -6,49 +6,70 @@
       "title": "Half-year totals and status mix",
       "instructions": "DEFINITIONS (use exactly): order revenue = quantity * unit_price. GROSS revenue = sum over ALL 400 orders regardless of status. NET revenue = sum over orders with status=='completed' only. AOV = NET revenue / number of completed orders.\n\nReport for the whole Jan-Jun 2026 file, one line each, in this exact order and format:\nTOTAL_ORDERS: <int>\nCOMPLETED: <int>\nREFUNDED: <int>\nCANCELLED: <int>\nGROSS_REVENUE: <number rounded to 2 decimals>\nNET_REVENUE: <number rounded to 2 decimals>\nAOV: <number rounded to 2 decimals>\nUNITS_COMPLETED: <int, sum of quantity over completed orders>\n\nWrite plain numbers with no currency symbol and no thousands separators.\n\nUse the aggregation tools; never add up raw order rows by hand. Copy numbers exactly as the tools print them (do not pad or re-round).",
       "expected_result": "TOTAL_ORDERS: 400; COMPLETED: 300; REFUNDED: 51; CANCELLED: 49; GROSS_REVENUE: 482245; NET_REVENUE: 350507; AOV: 1168.36; UNITS_COMPLETED: 814",
-      "status": "pending"
+      "status": "done",
+      "note": "Half-year totals retrieved from sales_summary",
+      "result": "s1: TOTAL_ORDERS: 400\nCOMPLETED: 300\nREFUNDED: 51\nCANCELLED: 49\nGROSS_REVENUE: 482245\nNET_REVENUE: 350507\nAOV: 1168.36\nUNITS_COMPLETED: 814",
+      "verified": true
     },
     {
       "id": "s2",
       "title": "Regional breakdown of net revenue",
       "instructions": "DEFINITIONS: order revenue = quantity * unit_price. NET revenue counts ONLY orders with status=='completed'.\n\nFor each of the 4 regions compute NET revenue, the number of completed orders, average order value (net revenue / completed orders) and the share of total net revenue in percent. Rank regions by NET revenue descending.\n\nOutput exactly 5 lines, numbers rounded to 2 decimals, no currency symbols:\n<rank>. <REGION>: revenue=<x>, orders=<int>, aov=<x>, share=<x>%\n(4 such lines, then)\nLEADER: <REGION>\n\nExample of the line format: '1. FOO: revenue=1234.5, orders=12, aov=102.88, share=30.12%'\n\nUse the aggregation tools; never add up raw order rows by hand. Copy numbers exactly as the tools print them (do not pad or re-round).",
       "expected_result": "1. APAC: revenue=106288, orders=82, aov=1296.2, share=30.32%; 2. LATAM: revenue=84377, orders=69, aov=1222.86, share=24.07%; 3. EMEA: revenue=81817, orders=81, aov=1010.09, share=23.34%; 4. AMER: revenue=78025, orders=68, aov=1147.43, share=22.26%; LEADER: APAC",
-      "status": "pending"
+      "status": "done",
+      "note": null,
+      "result": "s2: 1. APAC: revenue=106288, orders=82, aov=1296.2, share=30.32%\n2. LATAM: revenue=84377, orders=69, aov=1222.86, share=24.07%\n3. EMEA: revenue=81817, orders=81, aov=1010.09, share=23.34%\n4. AMER: revenue=78025, orders=68, aov=1147.43, share=22.26%\nLEADER: APAC",
+      "verified": true
     },
     {
       "id": "s3",
       "title": "Top customers by net revenue",
       "instructions": "DEFINITIONS: order revenue = quantity * unit_price. NET revenue counts ONLY orders with status=='completed'.\n\nRank all customers by NET revenue descending and report the top 5, plus the combined share of those top 5 against the TOTAL net revenue of all customers.\n\nOutput exactly 6 lines, numbers rounded to 2 decimals:\n<rank>. <customer_id>: revenue=<x>, completed_orders=<int>\n(5 such lines, then)\nTOP5_SHARE: <x>%\n\nUse the customer_id exactly as it appears in the data (e.g. C012).\n\nUse the aggregation tools; never add up raw order rows by hand. Copy numbers exactly as the tools print them (do not pad or re-round).",
       "expected_result": "1. C007: revenue=18623, completed_orders=11; 2. C029: revenue=18610, completed_orders=10; 3. C036: revenue=15319, completed_orders=11; 4. C027: revenue=14998, completed_orders=13; 5. C005: revenue=13904, completed_orders=8; TOP5_SHARE: 23.24%",
-      "status": "pending"
+      "status": "done",
+      "note": "Retrieved top 5 customers by net revenue (completed orders only)",
+      "result": "s3: 1. C007: revenue=18623, completed_orders=11\n2. C029: revenue=18610, completed_orders=10\n3. C036: revenue=15319, completed_orders=11\n4. C027: revenue=14998, completed_orders=13\n5. C005: revenue=13904, completed_orders=8\nTOP5_SHARE: 23.24%",
+      "verified": true
     },
     {
       "id": "s4",
       "title": "Monthly net revenue trend with month-over-month change",
       "instructions": "DEFINITIONS: order revenue = quantity * unit_price. NET revenue counts ONLY orders with status=='completed'. Month = first 7 characters of the date field (YYYY-MM).\n\nFor each month from 2026-01 to 2026-06 report NET revenue, completed order count, and month-over-month change in percent versus the previous month ((cur - prev) / prev * 100). January has no previous month.\n\nOutput exactly 8 lines, numbers rounded to 2 decimals:\n<YYYY-MM>: revenue=<x>, orders=<int>, mom=<x>%\n(for 2026-01 use mom=n/a; 6 such lines, then)\nBEST_MONTH: <YYYY-MM>\nWORST_MONTH: <YYYY-MM>\n\nBEST/WORST are by net revenue.\n\nUse the aggregation tools; never add up raw order rows by hand. Copy numbers exactly as the tools print them (do not pad or re-round).",
       "expected_result": "2026-01: revenue=61968, orders=50, mom=n/a; 2026-02: revenue=41783, orders=45, mom=-32.57%; 2026-03: revenue=68719, orders=51, mom=64.47%; 2026-04: revenue=66747, orders=58, mom=-2.87%; 2026-05: revenue=54345, orders=47, mom=-18.58%; 2026-06: revenue=56945, orders=49, mom=4.78%; BEST_MONTH: 2026-03; WORST_MONTH: 2026-02",
-      "status": "pending"
+      "status": "done",
+      "note": "Monthly net revenue trend with mom% calculated from aggregation tool",
+      "result": "s4: 2026-01: revenue=61968, orders=50, mom=n/a\n2026-02: revenue=41783, orders=45, mom=-32.57%\n2026-03: revenue=68719, orders=51, mom=64.47%\n2026-04: revenue=66747, orders=58, mom=-2.87%\n2026-05: revenue=54345, orders=47, mom=-18.58%\n2026-06: revenue=56945, orders=49, mom=4.78%\nBEST_MONTH: 2026-03\nWORST_MONTH: 2026-02",
+      "verified": true
     },
     {
       "id": "s5",
       "title": "Refund behaviour by category",
       "instructions": "DEFINITIONS: order revenue = quantity * unit_price. Refund rate for a group = (number of orders with status=='refunded' in the group) / (TOTAL number of orders in that group, all statuses) * 100. Refunded revenue = sum of revenue over refunded orders only.\n\nFor each of the 4 categories report total order count (all statuses), refunded order count, refund rate %, and refunded revenue. Rank by refund rate descending.\n\nOutput exactly 7 lines, numbers rounded to 2 decimals:\n<rank>. <category>: orders=<int>, refunded=<int>, rate=<x>%, refunded_revenue=<x>\n(4 such lines, then)\nOVERALL_REFUND_RATE: <x>%\nTOTAL_REFUNDED_REVENUE: <x>\nWORST_CATEGORY: <category>\n\nOVERALL_REFUND_RATE is over all 400 orders. WORST_CATEGORY is the one with the highest refund rate.\n\nUse the aggregation tools; never add up raw order rows by hand. Copy numbers exactly as the tools print them (do not pad or re-round).",
       "expected_result": "1. services: orders=70, refunded=11, rate=15.71%, refunded_revenue=20030; 2. subscription: orders=91, refunded=13, rate=14.29%, refunded_revenue=13023; 3. hardware: orders=130, refunded=17, rate=13.08%, refunded_revenue=31230; 4. accessories: orders=109, refunded=10, rate=9.17%, refunded_revenue=2450; OVERALL_REFUND_RATE: 12.75%; TOTAL_REFUNDED_REVENUE: 66733; WORST_CATEGORY: services",
-      "status": "pending"
+      "status": "done",
+      "note": "Refund report by category extracted; 4 categories analyzed with rankings by refund rate",
+      "result": "s5: 1. services: orders=70, refunded=11, rate=15.71%, refunded_revenue=20030\n2. subscription: orders=91, refunded=13, rate=14.29%, refunded_revenue=13023\n3. hardware: orders=130, refunded=17, rate=13.08%, refunded_revenue=31230\n4. accessories: orders=109, refunded=10, rate=9.17%, refunded_revenue=2450\nOVERALL_REFUND_RATE: 12.75%\nTOTAL_REFUNDED_REVENUE: 66733\nWORST_CATEGORY: services",
+      "verified": true
     },
     {
       "id": "s6",
       "title": "Product-level insights",
       "instructions": "DEFINITIONS: order revenue = quantity * unit_price. NET revenue counts ONLY orders with status=='completed'. Units = sum of quantity. Product AOV = net revenue / completed order count for that product.\n\nRank all products by NET revenue descending. Report the top 5 products, then the single lowest-revenue product, then the product with the most units sold, then net revenue per category.\n\nOutput exactly 11 lines, numbers rounded to 2 decimals:\n<rank>. <product>: revenue=<x>, units=<int>, orders=<int>, aov=<x>\n(5 such lines, then)\nLOWEST_REVENUE_PRODUCT: <product> (<x>)\nMOST_UNITS_PRODUCT: <product> (<int> units)\nCATEGORY_REVENUE: <cat1>=<x>, <cat2>=<x>, <cat3>=<x>, <cat4>=<x>\n(the CATEGORY_REVENUE list ordered by net revenue descending, on one line)\n\nUse the aggregation tools; never add up raw order rows by hand. Copy numbers exactly as the tools print them (do not pad or re-round).",
       "expected_result": "1. Laptop Pro: revenue=105270, units=74, orders=36, aov=2924.17; 2. Laptop Air: revenue=66052, units=69, orders=31, aov=2130.71; 3. Onboarding: revenue=46080, units=39, orders=23, aov=2003.48; 4. Training Day: revenue=34970, units=55, orders=26, aov=1345; 5. Cloud Enterprise: revenue=33801, units=39, orders=20, aov=1690.05; LOWEST_REVENUE_PRODUCT: Cloud Basic (2194); MOST_UNITS_PRODUCT: Headset (142 units); CATEGORY_REVENUE: hardware=187322, services=81050, subscription=46222, accessories=35913",
-      "status": "pending"
+      "status": "done",
+      "note": "Product-level insights complete: top 5 products identified, lowest-revenue and most-units products reported, category revenue summary provided.",
+      "result": "s6: 1. Laptop Pro: revenue=105270, units=74, orders=36, aov=2924.17\n2. Laptop Air: revenue=66052, units=69, orders=31, aov=2130.71\n3. Onboarding: revenue=46080, units=39, orders=23, aov=2003.48\n4. Training Day: revenue=34970, units=55, orders=26, aov=1345\n5. Cloud Enterprise: revenue=33801, units=39, orders=20, aov=1690.05\nLOWEST_REVENUE_PRODUCT: Cloud Basic (2194)\nMOST_UNITS_PRODUCT: Headset (142 units)\nCATEGORY_REVENUE: hardware=187322, services=81050, subscription=46222, accessories=35913",
+      "verified": true
     },
     {
       "id": "s7",
       "title": "Cross-cut: region x category, regional refund risk, Q1 vs Q2",
       "instructions": "DEFINITIONS: order revenue = quantity * unit_price. NET revenue counts ONLY orders with status=='completed'. Refund rate for a region = refunded orders / total orders in that region (all statuses) * 100. Q1 = months 2026-01..2026-03, Q2 = 2026-04..2026-06.\n\nReport three blocks, numbers rounded to 2 decimals.\n\nBlock A - for each region (alphabetical: AMER, APAC, EMEA, LATAM) the top category by NET revenue and the top product by NET revenue:\n<REGION>: top_category=<category> (<x>), top_product=<product> (<x>)\n\nBlock B - regions ranked by refund rate descending:\n<rank>. <REGION>: refunded=<int>/<total int>, rate=<x>%\n\nBlock C - exactly three lines:\nQ1_NET_REVENUE: <x>\nQ2_NET_REVENUE: <x>\nQ1_TO_Q2_CHANGE: <x>%\n\nUse the aggregation tools; never add up raw order rows by hand. Copy numbers exactly as the tools print them (do not pad or re-round).",
       "expected_result": "AMER: top_category=hardware (31327), top_product=Onboarding (16800); APAC: top_category=hardware (58376), top_product=Laptop Pro (33060); EMEA: top_category=hardware (48578), top_product=Laptop Pro (30160); LATAM: top_category=hardware (49041), top_product=Laptop Pro (29435); 1. EMEA: refunded=20/119, rate=16.81%; 2. AMER: refunded=12/90, rate=13.33%; 3. APAC: refunded=12/105, rate=11.43%; 4. LATAM: refunded=7/86, rate=8.14%; Q1_NET_REVENUE: 172470; Q2_NET_REVENUE: 178037; Q1_TO_Q2_CHANGE: 3.23%",
-      "status": "pending"
+      "status": "done",
+      "note": null,
+      "result": "s7: Block A - AMER: top_category=hardware (31327), top_product=Onboarding (16800)\nAPAC: top_category=hardware (58376), top_product=Laptop Pro (33060)\nEMEA: top_category=hardware (48578), top_product=Laptop Pro (30160)\nLATAM: top_category=hardware (49041), top_product=Laptop Pro (29435)\n\nBlock B - 1. EMEA: refunded=20/119, rate=16.81%\n2. AMER: refunded=12/90, rate=13.33%\n3. APAC: refunded=12/105, rate=11.43%\n4. LATAM: refunded=7/86, rate=8.14%\n\nBlock C - Q1_NET_REVENUE: 172470\nQ2_NET_REVENUE: 178037\nQ1_TO_Q2_CHANGE: 3.23%",
+      "verified": true
     }
   ]
 }
