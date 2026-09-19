@@ -53,6 +53,24 @@ The main agent's own account is in `report.md`. Full per-worker traces are in
 earlier run that reached 7/7 the same way but dispatched through a script
 because of a since-fixed tool schema bug.
 
+## Bench: five runs under a fixed protocol (bench/results.md)
+
+Same frozen plan (`plan-fixed.json`), same seed tool, verification in code
+(`src/verify.ts`, ordered numbers plus labels, the main agent cannot override it),
+main model Opus, workers Haiku. `npm run bench -- 5`.
+
+| Run | Rounds | Round 1 | Final | Total cost (API-rate estimate) | Minutes | Final tools |
+|---|---|---|---|---|---|---|
+| 1 | 2 | 0/7 | 7/7 | $2.47 | 7.8 | 4 |
+| 2 | 2 | 0/7 | 7/7 | $1.98 | 7.0 | 2 |
+| 3 | 2 | 0/7 | 7/7 | $2.67 | 9.8 | 4 |
+| 4 | 2 | 0/7 | 7/7 | $2.50 | 7.4 | 2 |
+| 5 | 2 | 0/7 | 7/7 | $2.47 | 10.5 | 3 |
+
+Converged 5/5, always in exactly two rounds, mean $2.42 and 8.5 minutes per run.
+Tool designs differed between runs (2 to 4 tools) but every design passed.
+Per-run traces, tools, plan and report are in `bench/run-N/`.
+
 ## Files
 
 | Path | What |
