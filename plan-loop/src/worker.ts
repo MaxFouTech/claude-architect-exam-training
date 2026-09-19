@@ -23,6 +23,9 @@ export interface WorkerResult {
   status_updates: { step_id: string; status: StepStatus; note?: string }[];
   trace: TraceEntry[];
   num_turns: number;
+  cost_usd: number;
+  input_tokens: number;
+  output_tokens: number;
   error?: string;
 }
 
@@ -50,6 +53,9 @@ export async function runWorker(opts: {
     status_updates: [],
     trace: [],
     num_turns: 0,
+    cost_usd: 0,
+    input_tokens: 0,
+    output_tokens: 0,
   };
 
   const updatePlanSteps = tool(
@@ -152,6 +158,11 @@ export async function runWorker(opts: {
         }
       } else if (message.type === "result") {
         result.num_turns = message.num_turns;
+        result.cost_usd = message.total_cost_usd;
+        for (const u of Object.values(message.modelUsage ?? {})) {
+          result.input_tokens += u.inputTokens + u.cacheReadInputTokens + u.cacheCreationInputTokens;
+          result.output_tokens += u.outputTokens;
+        }
         if (message.subtype !== "success") result.error = `worker ended with ${message.subtype}`;
         else if (!result.called_final_answer) result.final_answer = `(no final_answer call; last text) ${message.result}`;
       }

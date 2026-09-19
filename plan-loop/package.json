@@ -9,6 +9,7 @@
     "reset": "node scripts/reset.mjs",
     "loop": "tsx src/main.ts",
     "worker": "tsx src/worker-cli.ts",
+    "bench": "tsx src/bench.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

@@ -5,4 +5,9 @@ const tools = new URL("tools/", root);
 for (const f of readdirSync(tools)) rmSync(new URL(f, tools));
 cpSync(new URL("tools-seed/", root), tools, { recursive: true });
 for (const f of ["plan.json", "report.md"]) if (existsSync(new URL(f, root))) rmSync(new URL(f, root));
-console.log("reset: tools/ restored from tools-seed/, plan.json and report.md removed");
+if (existsSync(new URL("plan-fixed.json", root))) {
+  cpSync(new URL("plan-fixed.json", root), new URL("plan.json", root));
+  console.log("reset: tools/ restored from tools-seed/, plan.json restored from plan-fixed.json, report.md removed");
+} else {
+  console.log("reset: tools/ restored from tools-seed/, plan.json and report.md removed");
+}

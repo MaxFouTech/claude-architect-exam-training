@@ -3,7 +3,9 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { createSdkMcpServer, tool } from "@anthropic-ai/claude-agent-sdk";
 import { z } from "zod";
-import { loadPlan, updatePlan } from "./plan.js";
+import { existsSync, readFileSync } from "node:fs";
+import { loadPlan, updatePlan, type Plan } from "./plan.js";
+import { verifyAnswer } from "./verify.js";
 import { loadToolModules } from "./toolLoader.js";
 import { runWorker } from "./worker.js";
 
@@ -11,7 +13,15 @@ export function createOrchestratorServer(root: string) {
   const planPath = path.join(root, "plan.json");
   const toolsDir = path.join(root, "tools");
   const runsDir = path.join(root, "runs");
+  const fixedPlanPath = path.join(root, "plan-fixed.json");
   let round = 0;
+  const history: { round: number; dispatched: number; passed: number; worker_cost_usd: number; duration_ms: number; tools: string[] }[] = [];
+
+  /** Expected results come from the frozen plan when one exists, so edits to plan.json cannot change grading. */
+  const expectedFor = (plan: Plan, id: string): string | undefined => {
+    const src: Plan = existsSync(fixedPlanPath) ? JSON.parse(readFileSync(fixedPlanPath, "utf8")) : plan;
+    return src.steps.find((s) => s.id === id)?.expected_result;
+  };
 
   const runSubagents = tool(
     "run_subagents",
@@ -49,11 +59,36 @@ export function createOrchestratorServer(root: string) {
         ),
       );
       const { modules } = await loadToolModules(toolsDir);
+
+      // Verify in code and write verdicts into the plan.
+      const planNow = await loadPlan(planPath);
+      const verdicts = results.flatMap((w) =>
+        w.step_ids.map((id) => {
+          const expected = expectedFor(planNow, id) ?? "";
+          const v = verifyAnswer(expected, w.final_answer);
+          return { step_id: id, ...v };
+        }),
+      );
+      await updatePlan(planPath, (p) => {
+        for (const v of verdicts) {
+          const step = p.steps.find((s) => s.id === v.step_id);
+          if (!step) continue;
+          step.verified = v.pass;
+          step.status = v.pass ? "done" : "pending";
+          if (!v.pass) step.note = `round ${round}: missing numbers [${v.missing_numbers.join(", ")}], missing labels [${v.missing_labels.join(", ")}]`;
+        }
+      });
+      const passed = verdicts.filter((v) => v.pass).length;
+      const worker_cost_usd = results.reduce((s, w) => s + w.cost_usd, 0);
+      history.push({ round, dispatched: verdicts.length, passed, worker_cost_usd, duration_ms: Date.now() - started, tools: modules.map((m) => m.name) });
+
       const record = {
         round,
         started_at: new Date(started).toISOString(),
         duration_ms: Date.now() - started,
         tools_available: modules.map((m) => m.name),
+        summary: { dispatched: verdicts.length, passed, worker_cost_usd: Number(worker_cost_usd.toFixed(4)) },
+        verdicts,
         results,
       };
       await mkdir(runsDir, { recursive: true });
@@ -95,5 +130,6 @@ export function createOrchestratorServer(root: string) {
     { alwaysLoad: true },
   );
 
-  return createSdkMcpServer({ name: "orchestrator", version: "1.0.0", tools: [runSubagents, testTool] });
+  const server = createSdkMcpServer({ name: "orchestrator", version: "1.0.0", tools: [runSubagents, testTool] });
+  return { server, history };
 }
